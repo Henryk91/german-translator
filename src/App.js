@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-const sentences = [
+const initialSentences = [
   { en: "Hello, how are you?", de: "Hallo, wie geht es dir?" },
   { en: "What is your name?", de: "Wie heißt du?" },
   { en: "I love learning languages.", de: "Ich liebe es, Sprachen zu lernen." },
@@ -10,12 +10,13 @@ const sentences = [
 ];
 
 const App = () => {
-  const [currentSentence, setCurrentSentence] = useState(sentences[0]);
+  const [sentences, setSentences] = useState(initialSentences);
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [checkPunctuation, setCheckPunctuation] = useState(false); // Set to false by default
-  const [shuffleQuestions, setShuffleQuestions] = useState(false); // New state for shuffling
-  const endOfMessagesRef = useRef(null); // Reference for scrolling
+  const [checkPunctuation, setCheckPunctuation] = useState(false);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const endOfMessagesRef = useRef(null);
 
   // Shuffle the sentences array
   const shuffleArray = (array) => {
@@ -26,17 +27,14 @@ const App = () => {
     return array;
   };
 
-  // Update current sentence and shuffle if needed
+  // Function to update the current sentence
   const updateCurrentSentence = () => {
-    if (shuffleQuestions) {
-      const shuffledSentences = shuffleArray([...sentences]);
-      return shuffledSentences[0]; // Return a new random sentence
-    }
-    return sentences[Math.floor(Math.random() * sentences.length)]; // Return a random sentence if shuffle is off
+    return sentences[currentSentenceIndex]; // Return the current sentence based on the index
   };
 
   // Function to check the user's translation
   const checkTranslation = () => {
+    const currentSentence = updateCurrentSentence();
     const correctTranslation = currentSentence.de;
 
     // Normalize inputs: trim and lower case
@@ -55,9 +53,14 @@ const App = () => {
     // Check if user input matches correct translation (ignoring spaces)
     let feedbackMessage;
     if (finalUserInput === finalCorrectTranslation) {
-      const nextSentence = updateCurrentSentence(); // Get the next sentence based on shuffle
-      setCurrentSentence(nextSentence);
-      feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence.en}`; // Add extra newline for padding
+      const nextSentenceIndex = currentSentenceIndex + 1; 
+      if (nextSentenceIndex < sentences.length) {
+        setCurrentSentenceIndex(nextSentenceIndex);
+        const nextSentence = sentences[nextSentenceIndex].en;
+        feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence}`; 
+      } else {
+        feedbackMessage = "Great job! You've completed all sentences.";
+      }
       setUserInput("");
     } else {
       const userWords = normalizedUserInput.split(" ");
@@ -69,7 +72,7 @@ const App = () => {
       if (userInput.trim() === "") {
         feedbackMessage = "You didn't enter any translation. Try again.";
       } else {
-        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; // Add extra newline for padding
+        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; 
       }
     }
 
@@ -80,41 +83,59 @@ const App = () => {
       { text: `Bot: ${feedbackMessage}`, type: 'bot' }
     ]);
     
-    // Clear user input for the next translation
     setUserInput("");
   };
 
   // Function to show the correct translation and move to the next sentence
   const showCorrectAnswer = () => {
-    const correctAnswerMessage = `The correct answer is: ${currentSentence.de}\n\nHere's another sentence:\n\n${updateCurrentSentence().en}`;
+    const currentSentence = updateCurrentSentence(); // Get the current sentence based on index
+    const correctAnswerMessage = `The correct answer is: ${currentSentence.de}\n\nHere's another sentence:\n\n${sentences[currentSentenceIndex + 1]?.en || "No more sentences available."}`; // Check bounds
     
+    // Add user input and feedback to messages
     setMessages(prevMessages => [
       ...prevMessages,
-      { text: `You: ${userInput}`, type: 'user' },
+      { text: `You: Show Answer please`, type: 'user' },
       { text: `Bot: ${correctAnswerMessage}`, type: 'bot' }
     ]);
 
     // Update current sentence
-    setCurrentSentence(updateCurrentSentence());
-    setUserInput(""); // Clear input for the next translation
+    setCurrentSentenceIndex(prevIndex => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex < sentences.length) {
+        return nextIndex; 
+      }
+      return prevIndex; 
+    });
+    setUserInput(""); 
   };
 
   useEffect(() => {
-    // Check if there are no previous messages before adding the initial message
+    // Shuffle sentences if required
+    if (shuffleQuestions) {
+      const shuffledSentences = shuffleArray([...initialSentences]); // Shuffle only when needed
+      setSentences(shuffledSentences);
+      setCurrentSentenceIndex(0); // Reset index to start
+    } else {
+      setSentences(initialSentences); // Reset to initial order if not shuffled
+      setCurrentSentenceIndex(0); // Reset index to start
+    }
+  }, [shuffleQuestions]);
+
+  useEffect(() => {
     if (messages.length === 0) {
-      const initialBotMessage = `Bot: ${currentSentence.en}`;
+      const initialBotMessage = `Bot: ${updateCurrentSentence().en}`;
       setMessages([{ text: initialBotMessage, type: 'bot' }]);
     }
-  }, [currentSentence, messages]);
+  }, [messages]);
 
   // Effect to scroll to the bottom of the messages when they change
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]); // Dependency on messages array
+  }, [messages]);
 
   // Handle key down event in textarea
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && userInput.trim()) { // Check for Enter key only if input is not empty
+    if (e.key === 'Enter' && userInput.trim()) {
       e.preventDefault(); // Prevent adding a new line
       checkTranslation(); // Trigger the translation check
     }
@@ -127,21 +148,21 @@ const App = () => {
           {messages.map((message, index) => (
             <div key={index} className={`chat-bubble ${message.type}`}>
               <p>{message.text.split('\n').map((line, i) => (
-                <span key={i}>{line}<br /></span> // Break lines into spans
+                <span key={i}>{line}<br /></span>
               ))}</p>
             </div>
           ))}
-          <div ref={endOfMessagesRef} /> {/* For scrolling */}
+          <div ref={endOfMessagesRef} /> 
         </div>
-        {messages.length > 0 && ( // Only show input area if there are messages
+        {messages.length > 0 && (
           <div className="translation-input">
             <textarea 
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder="Type your translation here..."
-              onKeyDown={handleKeyDown} // Add key down handler
+              onKeyDown={handleKeyDown}
             />
-            <div className="button-container"> {/* Wrapper for button and checkbox */}
+            <div className="button-container">
               <div className="toggle-container">
                 <label>
                   <input 
@@ -162,13 +183,13 @@ const App = () => {
               </div>
               <button 
                 onClick={checkTranslation} 
-                disabled={!userInput.trim() && messages.length > 0} // Disable button if input is empty only during translation
+                disabled={!userInput.trim() && messages.length > 0} 
               >
                 Translate
               </button>
               <button 
                 onClick={showCorrectAnswer} 
-                style={{ marginLeft: '10px' }} // Add space between buttons
+                style={{ marginLeft: '10px' }} 
               >
                 Show Answer
               </button>
