@@ -49,27 +49,19 @@ body {
 
 .translation-input {
   display: flex;
-  flex-direction: column; /* Change to column for better wrapping */
-  align-items: stretch; /* Ensure items stretch to full width */
+  align-items: center;
   padding: 10px;
   border-top: 1px solid #ccc; /* Optional border for separation */
   background-color: #3a3a3c; /* Input area background color */
 }
 
 textarea {
-  flex: 1; /* Allow textarea to grow */
-  min-height: 100px; /* Set a minimum height */
+  flex: 1;
   border-radius: 20px;
   border: none;
   padding: 10px;
-  margin-bottom: 10px; /* Space between textarea and button */
+  margin-right: 10px;
   resize: none; /* Disable resizing */
-}
-
-.button-container {
-  display: flex; /* Use flex for button alignment */
-  justify-content: space-between; /* Space out checkbox and buttons */
-  align-items: center; /* Center vertically */
 }
 
 button {
@@ -85,7 +77,24 @@ button:hover {
   background-color: #4a2cb1; /* Darker button color on hover */
 }
 
+/* New styles for the language level selector */
+select {
+  padding: 10px;
+  border: none;
+  border-radius: 20px;
+  background-color: #5b3fd3; /* Same color as buttons */
+  color: white; /* Text color */
+  cursor: pointer;
+  margin-left: 10px; /* Spacing from label */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+select:hover {
+  background-color: #4a2cb1; /* Darker color on hover */
+}
+
 .toggle-container {
+  margin-left: 10px;
   display: flex;
   align-items: center;
   color: white; /* Checkbox label color */
