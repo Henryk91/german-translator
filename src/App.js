@@ -147,7 +147,12 @@ const checkTranslation = () => {
   }
 };
 
-
+const handleKeyDown = (e) => {
+  if (e.key === 'Enter' && userInput.trim()) {
+    e.preventDefault(); 
+    checkTranslation(); 
+  }
+};
   // Function to get the next level
   const getNextLevel = (currentLevel) => {
     const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -179,6 +184,7 @@ const checkTranslation = () => {
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder="Type your translation here..."
+              onKeyDown={handleKeyDown}
             />
             <div className="button-container"> {/* New wrapper for button and checkbox */}
               <div className="toggle-container">
