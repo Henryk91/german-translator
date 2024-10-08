@@ -23,6 +23,7 @@ body {
   overflow-y: auto; /* Enable scrolling */
   display: flex;
   flex-direction: column;
+  align-items: center; /* Center messages */
 }
 
 .chat-bubble {

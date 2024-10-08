@@ -66,9 +66,9 @@ const App = () => {
       { text: `You: ${userInput}`, type: 'user' },
       { text: `Bot: ${feedbackMessage}`, type: 'bot' }
     ]);
-
-    // Scroll to the bottom of the messages
-    endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    
+    // Clear user input for the next translation
+    setUserInput("");
   };
 
   useEffect(() => {
@@ -78,6 +78,11 @@ const App = () => {
       setMessages([{ text: initialBotMessage, type: 'bot' }]);
     }
   }, [currentSentence, messages]);
+
+  // Effect to scroll to the bottom of the messages when they change
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]); // Dependency on messages array
 
   return (
     <div className="app">
@@ -92,24 +97,26 @@ const App = () => {
           ))}
           <div ref={endOfMessagesRef} /> {/* For scrolling */}
         </div>
-        <div className="translation-input">
-          <textarea 
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Type your translation here..."
-          />
-          <button onClick={checkTranslation}>Translate</button>
-        </div>
-        <div className="toggle-container">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={checkPunctuation} 
-              onChange={() => setCheckPunctuation(!checkPunctuation)} 
+        {messages.length > 0 && ( // Only show input area if there are messages
+          <div className="translation-input">
+            <textarea 
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Type your translation here..."
             />
-            Check for punctuation
-          </label>
-        </div>
+            <button onClick={checkTranslation}>Translate</button>
+            <div className="toggle-container">
+              <label>
+                <input 
+                  type="checkbox" 
+                  checked={checkPunctuation} 
+                  onChange={() => setCheckPunctuation(!checkPunctuation)} 
+                />
+                Check for punctuation
+              </label>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
