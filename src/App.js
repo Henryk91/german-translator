@@ -1,66 +1,67 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-// Sentence sets for different levels
+// Define sentences for different language levels
 const sentencesByLevel = {
   A1: [
     { en: "Hello, how are you?", de: "Hallo, wie geht es dir?" },
     { en: "What is your name?", de: "Wie heißt du?" },
+    { en: "I love learning languages.", de: "Ich liebe es, Sprachen zu lernen." },
   ],
   A2: [
-    { en: "I love learning languages.", de: "Ich liebe es, Sprachen zu lernen." },
     { en: "Where do you live?", de: "Wo wohnst du?" },
+    { en: "This is a beautiful day.", de: "Das ist ein schöner Tag." },
+    { en: "I have a cat.", de: "Ich habe eine Katze." },
   ],
   B1: [
-    { en: "This is a beautiful day.", de: "Das ist ein schöner Tag." },
-    { en: "I like to travel to different countries.", de: "Ich reise gerne in verschiedene Länder." },
+    { en: "I want to go to the cinema.", de: "Ich möchte ins Kino gehen." },
+    { en: "Can you help me, please?", de: "Kannst du mir bitte helfen?" },
+    { en: "What do you like to do?", de: "Was machst du gern?" },
   ],
   B2: [
+    { en: "I enjoy traveling and exploring new cultures.", de: "Ich reise gerne und entdecke neue Kulturen." },
     { en: "What are your hobbies?", de: "Was sind deine Hobbys?" },
-    { en: "I enjoy reading books.", de: "Ich lese gerne Bücher." },
+    { en: "I am reading a fascinating book.", de: "Ich lese ein faszinierendes Buch." },
   ],
   C1: [
-    { en: "I appreciate the complexities of language.", de: "Ich schätze die Komplexität der Sprache." },
-    { en: "It’s important to understand cultural contexts.", de: "Es ist wichtig, kulturelle Kontexte zu verstehen." },
+    { en: "I have been learning German for two years.", de: "Ich lerne seit zwei Jahren Deutsch." },
+    { en: "Could you elaborate on that?", de: "Könntest du das näher erläutern?" },
+    { en: "It's important to stay motivated.", de: "Es ist wichtig, motiviert zu bleiben." },
   ],
   C2: [
-    { en: "I can discuss abstract concepts fluently.", de: "Ich kann abstrakte Konzepte fließend diskutieren." },
-    { en: "Understanding nuances in language is crucial.", de: "Das Verständnis von Nuancen in der Sprache ist entscheidend." },
+    { en: "I hope to master the language soon.", de: "Ich hoffe, die Sprache bald zu beherrschen." },
+    { en: "In my opinion, practice makes perfect.", de: "Meiner Meinung nach macht Übung den Meister." },
+    { en: "Could you provide an example?", de: "Könntest du ein Beispiel geben?" },
   ],
 };
 
 const App = () => {
-  const [sentences, setSentences] = useState([]); // Initialize with an empty array
-  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+  const [currentSentence, setCurrentSentence] = useState(null);
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [checkPunctuation, setCheckPunctuation] = useState(false);
+  const [checkPunctuation, setCheckPunctuation] = useState(false); // Set to false by default
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState('A1'); // Default level
-  const endOfMessagesRef = useRef(null);
+  const endOfMessagesRef = useRef(null); // Reference for scrolling
+  const [sentences, setSentences] = useState([]); // Store sentences for the current level
 
-  // Shuffle the sentences array
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+  // Effect to set sentences based on the selected level
+  useEffect(() => {
+    const initialSentences = sentencesByLevel[selectedLevel];
+    setSentences(initialSentences);
+    setCurrentSentence(initialSentences[0]); // Reset to first sentence of the level
+
+    // Add welcome message and first sentence if it's the first render
+    if (messages.length === 0) {
+      setMessages([
+        { text: "Welcome to the Language Learning App! Type your translation of the sentence below.", type: 'bot' },
+        { text: `Bot: ${initialSentences[0].en}`, type: 'bot' }
+      ]);
     }
-    return array;
-  };
-
-  // Function to update the current sentence
-  const updateCurrentSentence = () => {
-    return sentences[currentSentenceIndex];
-  };
+  }, [selectedLevel]);
 
   // Function to check the user's translation
   const checkTranslation = () => {
-    const currentSentence = updateCurrentSentence(); 
-
-    if (!currentSentence) {
-      return; // Prevent further execution if no current sentence
-    }
-
     const correctTranslation = currentSentence.de;
 
     // Normalize inputs: trim and lower case
@@ -79,13 +80,35 @@ const App = () => {
     // Check if user input matches correct translation (ignoring spaces)
     let feedbackMessage;
     if (finalUserInput === finalCorrectTranslation) {
-      const nextSentenceIndex = currentSentenceIndex + 1; 
+      const nextSentenceIndex = sentences.indexOf(currentSentence) + 1;
+
       if (nextSentenceIndex < sentences.length) {
-        setCurrentSentenceIndex(nextSentenceIndex);
         const nextSentence = sentences[nextSentenceIndex].en;
-        feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence}`; 
+        setCurrentSentence(sentences[nextSentenceIndex]);
+        feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence}`; // Add extra newline for padding
       } else {
-        feedbackMessage = "Great job! You've completed all sentences.";
+        // Level completed
+        const nextLevel = getNextLevel(selectedLevel);
+        if (nextLevel) {
+          feedbackMessage = `Congratulations! You've completed level ${selectedLevel}. You will now move on to level ${nextLevel}.`;
+          setSelectedLevel(nextLevel); // Move to next level
+          const nextSentences = sentencesByLevel[nextLevel];
+          setSentences(nextSentences); // Update sentences for the new level
+          setCurrentSentence(nextSentences[0]); // Set to the first sentence of the new level
+
+          // Append the transition message to the existing messages
+          setMessages(prevMessages => [
+            ...prevMessages,
+            { text: `Bot: ${feedbackMessage}`, type: 'bot' },
+            { text: `Bot: ${nextSentences[0].en}`, type: 'bot' } // Add the first sentence of the new level
+          ]);
+        } else {
+          feedbackMessage = "Great job! You've completed all sentences.";
+          setMessages(prevMessages => [
+            ...prevMessages,
+            { text: `Bot: ${feedbackMessage}`, type: 'bot' }
+          ]);
+        }
       }
       setUserInput("");
     } else {
@@ -98,7 +121,7 @@ const App = () => {
       if (userInput.trim() === "") {
         feedbackMessage = "You didn't enter any translation. Try again.";
       } else {
-        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; 
+        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; // Add extra newline for padding
       }
     }
 
@@ -109,79 +132,21 @@ const App = () => {
       { text: `Bot: ${feedbackMessage}`, type: 'bot' }
     ]);
     
+    // Clear user input for the next translation
     setUserInput("");
   };
 
-  // Function to show the correct translation
-  const showCorrectAnswer = () => {
-    const currentSentence = updateCurrentSentence(); 
-
-    if (!currentSentence) {
-      return; // Prevent further execution if no current sentence
-    }
-
-    const correctAnswerMessage = `The correct answer is: ${currentSentence.de}`;
-
-    // Add user input and feedback to messages
-    setMessages(prevMessages => [
-      ...prevMessages,
-      { text: `You: Show Answer please`, type: 'user' },
-      { text: `Bot: ${correctAnswerMessage}`, type: 'bot' }
-    ]);
-
-    // Move to the next sentence if available
-    setCurrentSentenceIndex(prevIndex => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex < sentences.length) {
-        return nextIndex; 
-      }
-      return prevIndex; 
-    });
-    setUserInput(""); 
+  // Function to get the next level
+  const getNextLevel = (currentLevel) => {
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    const currentIndex = levels.indexOf(currentLevel);
+    return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : null; // Return next level or null if none
   };
-
-  // Effect to update sentences based on selected level
-  useEffect(() => {
-    const newSentences = sentencesByLevel[selectedLevel] || [];
-    setSentences(newSentences);
-    setCurrentSentenceIndex(0); // Reset index to the first sentence
-    setMessages([]); // Clear messages
-  }, [selectedLevel]);
-
-  useEffect(() => {
-    // Shuffle sentences if required
-    if (shuffleQuestions) {
-      const shuffledSentences = shuffleArray([...sentences]); 
-      setSentences(shuffledSentences);
-      setCurrentSentenceIndex(0); 
-    }
-  }, [shuffleQuestions]);
-
-  useEffect(() => {
-    // Initial tutorial message
-    if (messages.length === 0) {
-      const tutorialMessage = `Welcome to the German translation app!\n\nIn this app, you'll practice translating English sentences into German. Simply type your translation in the input box and hit 'Translate' or press 'Enter'. If you want to see the correct answer, click on 'Show Answer'. Let's get started!`;
-      setMessages([{ text: tutorialMessage, type: 'bot' }]);
-    } else if (messages.length === 1) { // Only add the first sentence if it's the first response
-      const initialBotMessage = sentences.length > 0 ? `Bot: ${updateCurrentSentence().en}` : '';
-      if (initialBotMessage) {
-        setMessages(prevMessages => [...prevMessages, { text: initialBotMessage, type: 'bot' }]);
-      }
-    }
-  }, [messages, sentences]);
 
   // Effect to scroll to the bottom of the messages when they change
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Handle key down event in textarea
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && userInput.trim()) {
-      e.preventDefault(); 
-      checkTranslation(); 
-    }
-  };
+  }, [messages]); // Dependency on messages array
 
   return (
     <div className="app">
@@ -243,7 +208,13 @@ const App = () => {
                 Translate
               </button>
               <button 
-                onClick={showCorrectAnswer} 
+                onClick={() => {
+                  setMessages(prevMessages => [
+                    ...prevMessages,
+                    { text: `You: Show Answer`, type: 'user' },
+                    { text: `Bot: ${currentSentence.de}`, type: 'bot' } // Show the correct answer
+                  ]);
+                }} 
                 style={{ marginLeft: '10px' }} 
               >
                 Show Answer
