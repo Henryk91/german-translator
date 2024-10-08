@@ -61,71 +61,81 @@ const App = () => {
   }, [selectedLevel]);
 
   // Function to check the user's translation
-  const checkTranslation = () => {
-    const correctTranslation = currentSentence.de;
+  // Function to check the user's translation
+const checkTranslation = () => {
+  const correctTranslation = currentSentence.de;
 
-    // Normalize inputs: trim and lower case
-    const normalizedUserInput = userInput.trim().toLowerCase();
-    const normalizedCorrectTranslation = correctTranslation.toLowerCase();
+  // Normalize inputs: trim and lower case
+  const normalizedUserInput = userInput.trim().toLowerCase();
+  const normalizedCorrectTranslation = correctTranslation.toLowerCase();
 
-    // Remove punctuation from the correct translation if checking is off
-    const finalCorrectTranslation = checkPunctuation 
-      ? normalizedCorrectTranslation 
-      : normalizedCorrectTranslation.replace(/[.,!?]/g, '');
+  // Remove punctuation from the correct translation if checking is off
+  const finalCorrectTranslation = checkPunctuation 
+    ? normalizedCorrectTranslation 
+    : normalizedCorrectTranslation.replace(/[.,!?]/g, '');
 
-    const finalUserInput = checkPunctuation 
-      ? normalizedUserInput 
-      : normalizedUserInput.replace(/[.,!?]/g, '');
+  const finalUserInput = checkPunctuation 
+    ? normalizedUserInput 
+    : normalizedUserInput.replace(/[.,!?]/g, '');
 
-    // Check if user input matches correct translation (ignoring spaces)
-    let feedbackMessage;
-    if (finalUserInput === finalCorrectTranslation) {
-      const nextSentenceIndex = sentences.indexOf(currentSentence) + 1;
+  // Check if user input matches correct translation (ignoring spaces)
+  let feedbackMessage;
+  if (finalUserInput === finalCorrectTranslation) {
+    const nextSentenceIndex = sentences.indexOf(currentSentence) + 1;
 
-      if (nextSentenceIndex < sentences.length) {
-        const nextSentence = sentences[nextSentenceIndex].en;
-        setCurrentSentence(sentences[nextSentenceIndex]);
-        feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence}`; // Add extra newline for padding
-      } else {
-        // Level completed
-        const nextLevel = getNextLevel(selectedLevel);
-        if (nextLevel) {
-          feedbackMessage = `Congratulations! You've completed level ${selectedLevel}. You will now move on to level ${nextLevel}.`;
-          setSelectedLevel(nextLevel); // Move to next level
-          const nextSentences = sentencesByLevel[nextLevel];
-          setSentences(nextSentences); // Update sentences for the new level
-          setCurrentSentence(nextSentences[0]); // Set to the first sentence of the new level
+    // Add user input message before the feedback message
+    setMessages(prevMessages => [
+      ...prevMessages,
+      { text: `You: ${userInput}`, type: 'user' }
+    ]);
 
-          // Append the transition message to the existing messages
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { text: `Bot: ${feedbackMessage}`, type: 'bot' },
-            { text: `Bot: ${nextSentences[0].en}`, type: 'bot' } // Add the first sentence of the new level
-          ]);
-        } else {
-          feedbackMessage = "Great job! You've completed all sentences.";
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { text: `Bot: ${feedbackMessage}`, type: 'bot' }
-          ]);
-        }
-      }
-      setUserInput("");
+    if (nextSentenceIndex < sentences.length) {
+      const nextSentence = sentences[nextSentenceIndex].en;
+      setCurrentSentence(sentences[nextSentenceIndex]);
+      feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence}`; // Add extra newline for padding;
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { text: `Bot: ${feedbackMessage}`, type: 'bot' }
+      ]);
     } else {
-      const userWords = normalizedUserInput.split(" ");
-      const correctWords = finalCorrectTranslation.split(" ");
-      const feedbackWords = correctWords.map((word, index) => (
-        userWords[index] === word ? word : '___'
-      )).join(" ");
+      // Level completed
+      const nextLevel = getNextLevel(selectedLevel);
+      if (nextLevel) {
+        feedbackMessage = `Congratulations! You've completed level ${selectedLevel}. You will now move on to level ${nextLevel}.`;
+        setSelectedLevel(nextLevel); // Move to next level
+        const nextSentences = sentencesByLevel[nextLevel];
+        setSentences(nextSentences); // Update sentences for the new level
+        setCurrentSentence(nextSentences[0]); // Set to the first sentence of the new level
 
-      if (userInput.trim() === "") {
-        feedbackMessage = "You didn't enter any translation. Try again.";
+        // Append the transition message to the existing messages
+        setMessages(prevMessages => [
+          ...prevMessages,
+          { text: `Bot: ${feedbackMessage}`, type: 'bot' },
+          { text: `Bot: ${nextSentences[0].en}`, type: 'bot' } // Add the first sentence of the new level
+        ]);
       } else {
-        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; // Add extra newline for padding
+        feedbackMessage = "Great job! You've completed all sentences.";
+        setMessages(prevMessages => [
+          ...prevMessages,
+          { text: `Bot: ${feedbackMessage}`, type: 'bot' }
+        ]);
       }
     }
+    setUserInput("");
+  } else {
+    const userWords = normalizedUserInput.split(" ");
+    const correctWords = finalCorrectTranslation.split(" ");
+    const feedbackWords = correctWords.map((word, index) => (
+      userWords[index] === word ? word : '___'
+    )).join(" ");
 
-    // Add user input and feedback to messages
+    if (userInput.trim() === "") {
+      feedbackMessage = "You didn't enter any translation. Try again.";
+    } else {
+      feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; // Add extra newline for padding
+    }
+
+    // Add feedback message after the user's translation
     setMessages(prevMessages => [
       ...prevMessages,
       { text: `You: ${userInput}`, type: 'user' },
@@ -134,7 +144,9 @@ const App = () => {
     
     // Clear user input for the next translation
     setUserInput("");
-  };
+  }
+};
+
 
   // Function to get the next level
   const getNextLevel = (currentLevel) => {
