@@ -29,7 +29,7 @@ const App = () => {
 
   // Function to update the current sentence
   const updateCurrentSentence = () => {
-    return sentences[currentSentenceIndex]; // Return the current sentence based on the index
+    return sentences[currentSentenceIndex];
   };
 
   // Function to check the user's translation
@@ -88,8 +88,8 @@ const App = () => {
 
   // Function to show the correct translation and move to the next sentence
   const showCorrectAnswer = () => {
-    const currentSentence = updateCurrentSentence(); // Get the current sentence based on index
-    const correctAnswerMessage = `The correct answer is: ${currentSentence.de}\n\nHere's another sentence:\n\n${sentences[currentSentenceIndex + 1]?.en || "No more sentences available."}`; // Check bounds
+    const currentSentence = updateCurrentSentence(); 
+    const correctAnswerMessage = `The correct answer is: ${currentSentence.de}\n\nHere's another sentence:\n\n${sentences[currentSentenceIndex + 1]?.en || "No more sentences available."}`; 
     
     // Add user input and feedback to messages
     setMessages(prevMessages => [
@@ -112,19 +112,23 @@ const App = () => {
   useEffect(() => {
     // Shuffle sentences if required
     if (shuffleQuestions) {
-      const shuffledSentences = shuffleArray([...initialSentences]); // Shuffle only when needed
+      const shuffledSentences = shuffleArray([...initialSentences]); 
       setSentences(shuffledSentences);
-      setCurrentSentenceIndex(0); // Reset index to start
+      setCurrentSentenceIndex(0); 
     } else {
-      setSentences(initialSentences); // Reset to initial order if not shuffled
-      setCurrentSentenceIndex(0); // Reset index to start
+      setSentences(initialSentences); 
+      setCurrentSentenceIndex(0); 
     }
   }, [shuffleQuestions]);
 
   useEffect(() => {
+    // Initial tutorial message
     if (messages.length === 0) {
+      const tutorialMessage = `Welcome to the German translation app!\n\nIn this app, you'll practice translating English sentences into German. Simply type your translation in the input box and hit 'Translate' or press 'Enter'. If you want to see the correct answer, click on 'Show Answer'. Let's get started!`;
+      setMessages([{ text: tutorialMessage, type: 'bot' }]);
+    } else if (messages.length === 1) { // Only add the first sentence if it's the first response
       const initialBotMessage = `Bot: ${updateCurrentSentence().en}`;
-      setMessages([{ text: initialBotMessage, type: 'bot' }]);
+      setMessages(prevMessages => [...prevMessages, { text: initialBotMessage, type: 'bot' }]);
     }
   }, [messages]);
 
@@ -136,8 +140,8 @@ const App = () => {
   // Handle key down event in textarea
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && userInput.trim()) {
-      e.preventDefault(); // Prevent adding a new line
-      checkTranslation(); // Trigger the translation check
+      e.preventDefault(); 
+      checkTranslation(); 
     }
   };
 
