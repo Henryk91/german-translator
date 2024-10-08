@@ -19,7 +19,7 @@ const App = () => {
   // Function to check the user's translation
   const checkTranslation = () => {
     const correctTranslation = currentSentence.de;
-    
+
     // Normalize inputs: trim and lower case
     const normalizedUserInput = userInput.trim().toLowerCase();
     const normalizedCorrectTranslation = correctTranslation.toLowerCase();
@@ -99,12 +99,12 @@ const App = () => {
         </div>
         {messages.length > 0 && ( // Only show input area if there are messages
           <div className="translation-input">
-            <textarea 
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Type your translation here..."
-            />
-            <button onClick={checkTranslation}>Translate</button>
+          <textarea 
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Type your translation here..."
+          />
+          <div className="button-container"> {/* New wrapper for button and checkbox */}
             <div className="toggle-container">
               <label>
                 <input 
@@ -115,7 +115,15 @@ const App = () => {
                 Check for punctuation
               </label>
             </div>
+            <button 
+              onClick={checkTranslation} 
+              disabled={!userInput.trim()} // Disable button if input is empty
+            >
+              Translate
+            </button>
           </div>
+        </div>
+        
         )}
       </div>
     </div>

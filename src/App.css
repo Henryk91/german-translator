@@ -49,19 +49,27 @@ body {
 
 .translation-input {
   display: flex;
-  align-items: center;
+  flex-direction: column; /* Change to column for better wrapping */
+  align-items: stretch; /* Ensure items stretch to full width */
   padding: 10px;
   border-top: 1px solid #ccc; /* Optional border for separation */
   background-color: #3a3a3c; /* Input area background color */
 }
 
 textarea {
-  flex: 1;
+  flex: 1; /* Allow textarea to grow */
+  min-height: 100px; /* Set a minimum height */
   border-radius: 20px;
   border: none;
   padding: 10px;
-  margin-right: 10px;
+  margin-bottom: 10px; /* Space between textarea and button */
   resize: none; /* Disable resizing */
+}
+
+.button-container {
+  display: flex; /* Use flex for button alignment */
+  justify-content: space-between; /* Space out checkbox and button */
+  align-items: center; /* Center vertically */
 }
 
 button {
@@ -78,7 +86,6 @@ button:hover {
 }
 
 .toggle-container {
-  margin-left: 10px;
   display: flex;
   align-items: center;
   color: white; /* Checkbox label color */
