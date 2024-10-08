@@ -14,7 +14,26 @@ const App = () => {
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [checkPunctuation, setCheckPunctuation] = useState(false); // Set to false by default
+  const [shuffleQuestions, setShuffleQuestions] = useState(false); // New state for shuffling
   const endOfMessagesRef = useRef(null); // Reference for scrolling
+
+  // Shuffle the sentences array
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  // Update current sentence and shuffle if needed
+  const updateCurrentSentence = () => {
+    if (shuffleQuestions) {
+      const shuffledSentences = shuffleArray([...sentences]);
+      return shuffledSentences[0]; // Return a new random sentence
+    }
+    return sentences[Math.floor(Math.random() * sentences.length)]; // Return a random sentence if shuffle is off
+  };
 
   // Function to check the user's translation
   const checkTranslation = () => {
@@ -36,14 +55,9 @@ const App = () => {
     // Check if user input matches correct translation (ignoring spaces)
     let feedbackMessage;
     if (finalUserInput === finalCorrectTranslation) {
-      const nextSentenceIndex = sentences.indexOf(currentSentence) + 1;
-      if (nextSentenceIndex < sentences.length) {
-        const nextSentence = sentences[nextSentenceIndex].en;
-        setCurrentSentence(sentences[nextSentenceIndex]);
-        feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence}`; // Add extra newline for padding
-      } else {
-        feedbackMessage = "Great job! You've completed all sentences.";
-      }
+      const nextSentence = updateCurrentSentence(); // Get the next sentence based on shuffle
+      setCurrentSentence(nextSentence);
+      feedbackMessage = `Correct! Here's another sentence:\n\n${nextSentence.en}`; // Add extra newline for padding
       setUserInput("");
     } else {
       const userWords = normalizedUserInput.split(" ");
@@ -55,8 +69,7 @@ const App = () => {
       if (userInput.trim() === "") {
         feedbackMessage = "You didn't enter any translation. Try again.";
       } else {
-        const nextSentence = sentences[sentences.indexOf(currentSentence)].en;
-        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${nextSentence}`; // Add extra newline for padding
+        feedbackMessage = `Incorrect. You got: ${feedbackWords}.\n\nTry again:\n${currentSentence.en}`; // Add extra newline for padding
       }
     }
 
@@ -69,6 +82,21 @@ const App = () => {
     
     // Clear user input for the next translation
     setUserInput("");
+  };
+
+  // Function to show the correct translation and move to the next sentence
+  const showCorrectAnswer = () => {
+    const correctAnswerMessage = `The correct answer is: ${currentSentence.de}\n\nHere's another sentence:\n\n${updateCurrentSentence().en}`;
+    
+    setMessages(prevMessages => [
+      ...prevMessages,
+      { text: `You: ${userInput}`, type: 'user' },
+      { text: `Bot: ${correctAnswerMessage}`, type: 'bot' }
+    ]);
+
+    // Update current sentence
+    setCurrentSentence(updateCurrentSentence());
+    setUserInput(""); // Clear input for the next translation
   };
 
   useEffect(() => {
@@ -99,31 +127,44 @@ const App = () => {
         </div>
         {messages.length > 0 && ( // Only show input area if there are messages
           <div className="translation-input">
-          <textarea 
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Type your translation here..."
-          />
-          <div className="button-container"> {/* New wrapper for button and checkbox */}
-            <div className="toggle-container">
-              <label>
-                <input 
-                  type="checkbox" 
-                  checked={checkPunctuation} 
-                  onChange={() => setCheckPunctuation(!checkPunctuation)} 
-                />
-                Check for punctuation
-              </label>
+            <textarea 
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Type your translation here..."
+            />
+            <div className="button-container"> {/* Wrapper for button and checkbox */}
+              <div className="toggle-container">
+                <label>
+                  <input 
+                    type="checkbox" 
+                    checked={checkPunctuation} 
+                    onChange={() => setCheckPunctuation(!checkPunctuation)} 
+                  />
+                  Check for punctuation
+                </label>
+                <label style={{ marginLeft: '10px' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={shuffleQuestions} 
+                    onChange={() => setShuffleQuestions(!shuffleQuestions)} 
+                  />
+                  Shuffle Questions
+                </label>
+              </div>
+              <button 
+                onClick={checkTranslation} 
+                disabled={!userInput.trim() && messages.length > 0} // Disable button if input is empty only during translation
+              >
+                Translate
+              </button>
+              <button 
+                onClick={showCorrectAnswer} 
+                style={{ marginLeft: '10px' }} // Add space between buttons
+              >
+                Show Answer
+              </button>
             </div>
-            <button 
-              onClick={checkTranslation} 
-              disabled={!userInput.trim()} // Disable button if input is empty
-            >
-              Translate
-            </button>
           </div>
-        </div>
-        
         )}
       </div>
     </div>

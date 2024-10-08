@@ -68,7 +68,7 @@ textarea {
 
 .button-container {
   display: flex; /* Use flex for button alignment */
-  justify-content: space-between; /* Space out checkbox and button */
+  justify-content: space-between; /* Space out checkbox and buttons */
   align-items: center; /* Center vertically */
 }
 
