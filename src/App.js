@@ -112,6 +112,14 @@ const App = () => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]); // Dependency on messages array
 
+  // Handle key down event in textarea
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && userInput.trim()) { // Check for Enter key only if input is not empty
+      e.preventDefault(); // Prevent adding a new line
+      checkTranslation(); // Trigger the translation check
+    }
+  };
+
   return (
     <div className="app">
       <div className="chat-container">
@@ -131,6 +139,7 @@ const App = () => {
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder="Type your translation here..."
+              onKeyDown={handleKeyDown} // Add key down handler
             />
             <div className="button-container"> {/* Wrapper for button and checkbox */}
               <div className="toggle-container">
