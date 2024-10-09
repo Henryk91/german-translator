@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/german-translator/static/css/main.c4d1114c.css",
-    "main.js": "/german-translator/static/js/main.e76e9cf4.js",
+    "main.css": "/german-translator/static/css/main.9b0ed0df.css",
+    "main.js": "/german-translator/static/js/main.c1cd0b4c.js",
     "static/js/453.b7fc308b.chunk.js": "/german-translator/static/js/453.b7fc308b.chunk.js",
     "index.html": "/german-translator/index.html",
-    "main.c4d1114c.css.map": "/german-translator/static/css/main.c4d1114c.css.map",
-    "main.e76e9cf4.js.map": "/german-translator/static/js/main.e76e9cf4.js.map",
+    "main.9b0ed0df.css.map": "/german-translator/static/css/main.9b0ed0df.css.map",
+    "main.c1cd0b4c.js.map": "/german-translator/static/js/main.c1cd0b4c.js.map",
     "453.b7fc308b.chunk.js.map": "/german-translator/static/js/453.b7fc308b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.c4d1114c.css",
-    "static/js/main.e76e9cf4.js"
+    "static/css/main.9b0ed0df.css",
+    "static/js/main.c1cd0b4c.js"
   ]
 }
