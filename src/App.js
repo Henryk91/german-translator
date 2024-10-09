@@ -248,11 +248,11 @@ const handleKeyDown = (e) => {
                   Shuffle Questions
                 </label>
               </div>
-              <div style={{ marginBottom: '10px', display: 'unset'  }}>
-                <select 
+              <div style={{ marginBottom: '10px', display: 'unset' }}>
+                <select
                   value={selectedLevel} 
                   onChange={(e) => setSelectedLevel(e.target.value)}
-                  style={{ marginLeft: '10px', marginRight: '10px'}} // Adjust for spacing
+                  style={{ marginLeft: '10px', marginRight: '10px', width: "80px"}} // Adjust for spacing
                 >
                   <option value="A1">A1</option>
                   <option value="A2">A2</option>
