@@ -101,7 +101,7 @@ const App = () => {
         { text: `Bot: ${initialSentences[0].en}`, type: 'bot' }
       ]);
     }
-  }, [selectedLevel]);
+  }, [selectedLevel, messages.length]);
 
   // Function to check the user's translation
   // Function to check the user's translation
